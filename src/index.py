@@ -34,8 +34,11 @@ def readData():
 
 def createImages(image):
     images = [image]
+    print("Normal finished")
     images.append(cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)) 
+    print("Gray finished")
     images.append(cv2.blur(image, (10, 10)))
+    print("Mean finished")
     images.append(cv2.medianBlur(image, 5))
 
     return images
