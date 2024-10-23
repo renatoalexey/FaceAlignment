@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 def printGraphics(all_distances, image_types):
+    print(all_distances)
     colors = ['red', 'green', 'blue', 'orange']
     values = []
     stds = []
