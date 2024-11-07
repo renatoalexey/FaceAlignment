@@ -1,3 +1,11 @@
+import sys
+import subprocess
+
+print(f"A versão do Python usada é: {sys.version}")
+print(f"Caminho do Python sendo usado: {sys.executable}")
+#subprocess.check_call([sys.executable, "-m", "pip", "install", "numpy"])
+
+import numpy as np
 from skimage import io
 from scipy.io import loadmat
 from pathlib import Path
@@ -7,7 +15,7 @@ import cv2
 import math
 import matplotlib.pyplot as plt
 import os
-import numpy as np
+from PIL import Image, ImageEnhance
 
 image_types = ['normal', 'gray', 'mean', 'median']
 def calcEuclideanDistance(x1, y1, x2, y2):
@@ -42,10 +50,16 @@ def readData():
 
 def createImages(image):
     images = [image]
-    images.append(cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)) 
-    images.append(cv2.blur(image, (10, 10)))
-    images.append(cv2.medianBlur(image, 5))
+    
+    gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    enhancer = ImageEnhance.Brightness(gray_image)
 
+    imagem_ajustada = enhancer.enhance(0.5)
+    
+    images.append(gray_image) 
+    images.append(cv2.blur(gray_image, (10, 10)))
+    images.append(cv2.medianBlur(gray_image, 5))
+    
     return images
 
 def calcPointsDiffs(file_image_path, file_landmarks_path, all_distances, all_points_distances):
@@ -53,8 +67,8 @@ def calcPointsDiffs(file_image_path, file_landmarks_path, all_distances, all_poi
     data_points = data['pts_2d']
 
     fa = face_alignment.FaceAlignment(face_alignment.LandmarksType.TWO_D, flip_input=False)
-    input = io.imread(file_image_path)
-    images = createImages(input)
+    original_image = io.imread(file_image_path)
+    images = createImages(original_image)
     
     img = cv2.imread(file_image_path)
 
@@ -140,7 +154,7 @@ def printGraph(all_distances):
     plt.grid(True)
     plt.show()
 
-def teste ():
+def sample ():
     all_distances = {}
     points_d = {}
     for type in image_types:
@@ -153,5 +167,5 @@ def teste ():
     print(all_distances)
     print(all_points)
 
-#teste()
-readData()
+sample()
+#readData()
