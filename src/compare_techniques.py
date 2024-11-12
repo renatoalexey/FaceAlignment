@@ -52,11 +52,12 @@ def createImages(image):
     images = [image]
     
     gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    enhancer = ImageEnhance.Brightness(gray_image)
+    #enhancer = ImageEnhance.Brightness(gray_image)
 
-    imagem_ajustada = enhancer.enhance(0.5)
+    #imagem_ajustada = enhancer.enhance(0.5)
     
     images.append(gray_image) 
+    #images.append(imagem_ajustada)
     images.append(cv2.blur(gray_image, (10, 10)))
     images.append(cv2.medianBlur(gray_image, 5))
     
