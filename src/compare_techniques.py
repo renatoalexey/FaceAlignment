@@ -14,10 +14,11 @@ import face_alignment
 import cv2
 import math
 import matplotlib.pyplot as plt
+import seaborn as sns
 import os
 from PIL import Image, ImageEnhance
 
-image_types = ['normal', 'gray', 'mean', 'median']
+image_types = ['normal', 'gray', 'b_plus', 'b_minus', 'mean', 'median', 'n']
 def calcEuclideanDistance(x1, y1, x2, y2):
     return round(math.sqrt((x2 - x1)**2 + (y2 - y1)**2), 2)
 
@@ -52,15 +53,22 @@ def createImages(image):
     images = [image]
     
     gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    #enhancer = ImageEnhance.Brightness(gray_image)
 
-    #imagem_ajustada = enhancer.enhance(0.5)
-    
     images.append(gray_image) 
-    #images.append(imagem_ajustada)
+    images.append(cv2.convertScaleAbs(gray_image, alpha=1, beta=50))
+    images.append(cv2.convertScaleAbs(gray_image, alpha=1, beta=-50))
     images.append(cv2.blur(gray_image, (10, 10)))
     images.append(cv2.medianBlur(gray_image, 5))
-    
+
+    normalized_image = gray_image.astype(np.float32) / 255.0
+    resized_image = cv2.resize(gray_image, (450, 450))
+    #images.append(resized_image)
+
+
+    #cv2.imshow("Normalized Image", normalized_image)
+    #cv2.waitKey(0)
+    #cv2.destroyAllWindows()
+
     return images
 
 def calcPointsDiffs(file_image_path, file_landmarks_path, all_distances, all_points_distances):
@@ -69,9 +77,9 @@ def calcPointsDiffs(file_image_path, file_landmarks_path, all_distances, all_poi
 
     fa = face_alignment.FaceAlignment(face_alignment.LandmarksType.TWO_D, flip_input=False)
     original_image = io.imread(file_image_path)
-    images = createImages(original_image)
     
     img = cv2.imread(file_image_path)
+    images = createImages(img)
 
     #print_landmarks(img, data_points)
 
@@ -87,7 +95,8 @@ def calcPointsDiffs(file_image_path, file_landmarks_path, all_distances, all_poi
                 euclidean_mean = np.mean(euclidean_distances)
 
                 if euclidean_mean <= 50:
-                    all_points_distances = sum_points_diffs(all_points_distances, euclidean_distances, image_types[k])
+                    #all_points_distances = sum_points_diffs(all_points_distances, euclidean_distances, image_types[k])
+                    all_points_distances[image_types[k]].append(euclidean_distances)
                     all_distances[image_types[k]].append(euclidean_mean)
                     break
 
@@ -125,34 +134,15 @@ def sum_points_diffs(all_points_distances, euclidean_distances, type):
 
 def printGraph(all_distances):
 
-    x = [i * 5 for i in range(1, 35)] * 2
-    y = [ 20 for i in range(1, 35) ] + [ 40 for i in range(1, 35) ]
-    sizes = []
+    #distances_mean = list(map(lambda input: np.mean(input) , sizes))
 
-    for i in range(68):
-        temp = []
-        for row in all_distances:
-            temp.append(row[i])
-        sizes.append(temp)
-
-    distances_mean = list(map(lambda input: np.mean(input) , sizes))
-
-    print(len(x))
-    print(len(y))
-    print(len(distances_mean))
-
-    print(f"Média: {np.dis}")
-    # Criação do gráfico de bolhas
-    plt.figure(figsize=(10, 6))
-    plt.scatter(x, y, s=distances_mean, alpha=0.5, c='blue', edgecolors='w', linewidth=0.5)
+    sns.boxplot(data=all_distances['normal'])
 
     # Adicionando rótulos e título
     plt.xlabel('Eixo X')
     plt.ylabel('Eixo Y')
-    plt.title('Gráfico de Bolhas')
+    plt.title('Pontos')
 
-    # Exibir o gráfico
-    plt.grid(True)
     plt.show()
 
 def sample ():
@@ -167,6 +157,8 @@ def sample ():
     all_distances, all_points = calcPointsDiffs(file_name, points, all_distances, points_d)
     print(all_distances)
     print(all_points)
+    #printGraph(all_distances)
+    graphic_bar.printGraphics(all_distances, image_types)
 
-sample()
-#readData()
+#sample()
+readData()
