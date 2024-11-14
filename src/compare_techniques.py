@@ -1,10 +1,3 @@
-import sys
-import subprocess
-
-print(f"A versão do Python usada é: {sys.version}")
-print(f"Caminho do Python sendo usado: {sys.executable}")
-#subprocess.check_call([sys.executable, "-m", "pip", "install", "numpy"])
-
 import numpy as np
 from skimage import io
 from scipy.io import loadmat
@@ -16,6 +9,7 @@ import math
 import matplotlib.pyplot as plt
 import seaborn as sns
 import os
+from enums.tecniques import Techs 
 from PIL import Image, ImageEnhance
 
 image_types = ['normal', 'gray', 'b_plus', 'b_minus', 'mean', 'median', 'n']
@@ -29,12 +23,14 @@ def readData():
 
     all_distances = {}
     all_points_distances = {}
-    for type in image_types:
-        all_distances[type] = []
-        all_points_distances[type] = []
+    for tech in Techs:
+        all_distances[tech.name] = []
+        all_points_distances[tech.name] = []
 
     cont = 0
     for file_image_path in folder_image_path.iterdir():
+        if cont == 50:
+            break
         if(cont == 100 or cont == 500 or cont == 1000):
             print(f"Imagem n {cont}")
         cont +=1
@@ -45,8 +41,8 @@ def readData():
             all_distances, all_points_distances = calcPointsDiffs(file_image_path, file_landmarks_path, 
                                             all_distances, all_points_distances)
 
-    #printGraph(all_distances)
-    print(all_points_distances)
+    printGraph(all_points_distances)
+    #print(all_points_distances)
     graphic_bar.printGraphics(all_distances, image_types)
 
 def createImages(image):
@@ -59,15 +55,11 @@ def createImages(image):
     images.append(cv2.convertScaleAbs(gray_image, alpha=1, beta=-50))
     images.append(cv2.blur(gray_image, (10, 10)))
     images.append(cv2.medianBlur(gray_image, 5))
+    images.append(cv2.equalizeHist(gray_image))
 
-    normalized_image = gray_image.astype(np.float32) / 255.0
-    resized_image = cv2.resize(gray_image, (450, 450))
+    #normalized_image = gray_image.astype(np.float32) / 255.0
+    #resized_image = cv2.resize(gray_image, (450, 450))
     #images.append(resized_image)
-
-
-    #cv2.imshow("Normalized Image", normalized_image)
-    #cv2.waitKey(0)
-    #cv2.destroyAllWindows()
 
     return images
 
@@ -80,12 +72,18 @@ def calcPointsDiffs(file_image_path, file_landmarks_path, all_distances, all_poi
     
     img = cv2.imread(file_image_path)
     images = createImages(img)
+    gray_image = None
 
     #print_landmarks(img, data_points)
+    for tech in Techs:
+        format_img = None
+        if tech.name == Techs.GRAY.name:
+            gray_image = tech.getTech(img)
+            format_img = gray_image
+        else:
+            format_img = tech.getTech(gray_image)
 
-    for k, image in enumerate(images):
-        prediction_points = fa.get_landmarks(image)
-
+        prediction_points = fa.get_landmarks(format_img)
         #print_landmarks(image, prediction_points[0])
 
         if prediction_points is not None:
@@ -96,8 +94,8 @@ def calcPointsDiffs(file_image_path, file_landmarks_path, all_distances, all_poi
 
                 if euclidean_mean <= 50:
                     #all_points_distances = sum_points_diffs(all_points_distances, euclidean_distances, image_types[k])
-                    all_points_distances[image_types[k]].append(euclidean_distances)
-                    all_distances[image_types[k]].append(euclidean_mean)
+                    all_points_distances[tech.name].append(euclidean_distances)
+                    all_distances[tech.name].append(euclidean_mean)
                     break
 
                 if euclidean_mean > 50 and i == len(prediction_points):
@@ -136,21 +134,22 @@ def printGraph(all_distances):
 
     #distances_mean = list(map(lambda input: np.mean(input) , sizes))
 
-    sns.boxplot(data=all_distances['normal'])
+    plt.figure(figsize=(10, 6))
+    sns.boxplot(data=all_distances['GRAY'])
 
     # Adicionando rótulos e título
     plt.xlabel('Eixo X')
     plt.ylabel('Eixo Y')
     plt.title('Pontos')
 
-    plt.show()
+    plt.savefig('box.png')
 
 def sample ():
     all_distances = {}
     points_d = {}
-    for type in image_types:
-        all_distances[type] = []
-        points_d[type] = []
+    for tech in Techs:
+        all_distances[tech.name] = []
+        points_d[tech.name] = []
 
     file_name = "IBUG_image_003_1_6.jpg"
     points = "landmarks/IBUG_image_003_1_6_pts.mat"
