@@ -9,13 +9,23 @@ import math
 import matplotlib.pyplot as plt
 import seaborn as sns
 import os
-from enums.tecniques import Techs 
+from enums.tecniques import Techs
+from enums.bright_type import Brights
 from PIL import Image, ImageEnhance
 
+fa = face_alignment.FaceAlignment(face_alignment.LandmarksType.TWO_D, flip_input=False)
 image_types = ['normal', 'gray', 'b_plus', 'b_minus', 'mean', 'median', 'n']
 def calcEuclideanDistance(x1, y1, x2, y2):
     return round(math.sqrt((x2 - x1)**2 + (y2 - y1)**2), 2)
 
+def initialize_distances():
+    all_distances = {}
+    all_points_distances = {}
+    for type in Brights:
+        all_distances[type.name] = []
+        all_points_distances[type.name] = []
+    return all_distances, all_points_distances
+        
 def readData():
     folder_image_path = Path('images')
     folder_landmarks_path = 'landmarks/'
@@ -27,10 +37,11 @@ def readData():
         all_distances[tech.name] = []
         all_points_distances[tech.name] = []
 
+    all_distances, all_points_distances = initialize_distances()
     cont = 0
     for file_image_path in folder_image_path.iterdir():
-        if cont == 50:
-            break
+        #if cont == 50:
+         #   break
         if(cont == 100 or cont == 500 or cont == 1000):
             print(f"Imagem n {cont}")
         cont +=1
@@ -41,7 +52,7 @@ def readData():
             all_distances, all_points_distances = calcPointsDiffs(file_image_path, file_landmarks_path, 
                                             all_distances, all_points_distances)
 
-    printGraph(all_points_distances)
+    #printGraph(all_points_distances)
     #print(all_points_distances)
     graphic_bar.printGraphics(all_distances, image_types)
 
@@ -67,17 +78,23 @@ def calcPointsDiffs(file_image_path, file_landmarks_path, all_distances, all_poi
     data = loadmat(file_landmarks_path)
     data_points = data['pts_2d']
 
-    fa = face_alignment.FaceAlignment(face_alignment.LandmarksType.TWO_D, flip_input=False)
     original_image = io.imread(file_image_path)
     
     img = cv2.imread(file_image_path)
     images = createImages(img)
-    gray_image = None
-
+    #gray_image = None
+    gray_image = Techs.GRAY.getTech(img)
     #print_landmarks(img, data_points)
+
+    format_img = None
+    #return getAllTechs(file_image_path, all_distances, all_points_distances, data_points, img)
+    return getBrightness(file_image_path, all_distances, all_points_distances, data_points, img, gray_image)
+
+def getAllTechs(file_image_path, all_distances, all_points_distances, data_points, img):
     for tech in Techs:
-        format_img = None
-        if tech.name == Techs.GRAY.name:
+        if tech.name == Techs.NORMAL.name:
+            format_img = img
+        elif tech.name == Techs.GRAY.name:
             gray_image = tech.getTech(img)
             format_img = gray_image
         else:
@@ -87,20 +104,44 @@ def calcPointsDiffs(file_image_path, file_landmarks_path, all_distances, all_poi
         #print_landmarks(image, prediction_points[0])
 
         if prediction_points is not None:
-
-            for i in range(0, len(prediction_points)):
-                euclidean_distances = getDistances(data_points, prediction_points, i) 
-                euclidean_mean = np.mean(euclidean_distances)
-
-                if euclidean_mean <= 50:
-                    #all_points_distances = sum_points_diffs(all_points_distances, euclidean_distances, image_types[k])
-                    all_points_distances[tech.name].append(euclidean_distances)
-                    all_distances[tech.name].append(euclidean_mean)
-                    break
-
-                if euclidean_mean > 50 and i == len(prediction_points):
-                    print(f"{file_image_path} - {euclidean_mean}")
+            euclidean_distances, euclidean_mean = getEuclideanMetrics(file_image_path, data_points, prediction_points)
+            if euclidean_distances is not None:
+                all_points_distances[tech.name].append(euclidean_distances)
+                all_distances[tech.name].append(euclidean_mean)
+            
     return all_distances, all_points_distances
+
+def getBrightness(file_image_path, all_distances, all_points_distances, data_points, img, gray_image):
+    
+    for bright in Brights:
+        if bright.name == Brights.NORMAL.name:
+            format_img = img
+        else:
+            format_img = bright.getTech(gray_image)
+        prediction_points = fa.get_landmarks(format_img)
+
+        if prediction_points is not None:
+            euclidean_distances, euclidean_mean = getEuclideanMetrics(file_image_path, data_points, prediction_points)
+            if euclidean_distances is not None:
+                all_points_distances[bright.name].append(euclidean_distances)
+                all_distances[bright.name].append(euclidean_mean)
+            
+    return all_distances, all_points_distances
+
+def getEuclideanMetrics(file_image_path, data_points, prediction_points):
+    try: 
+        for i in range(0, len(prediction_points)):
+            euclidean_distances = getDistances(data_points, prediction_points, i) 
+            euclidean_mean = np.mean(euclidean_distances)
+
+            if euclidean_mean <= 50:
+                return euclidean_distances, euclidean_mean
+
+            if euclidean_mean > 50 and i == len(prediction_points):
+                print(f"{file_image_path} - {euclidean_mean}")
+    except Exception as e:  # Handle any other exception
+        print(f"An error occurred: {e}, Prediction points: {prediction_points}")
+    return None, None
 
 def print_landmarks(img, points):
     
