@@ -39,7 +39,7 @@ class Techs(Enum):
     MEAN = ("Média", getMean)
     MEDIAN = ("Mediana", getMedian)
     HIST = ("Realce", getHist)
-    TESTE = ("Borda", getBorder)
+    BORDER = ("Borda", getBorder)
 
     def __init__(self, f_name, getTech):
         self.f_name = f_name

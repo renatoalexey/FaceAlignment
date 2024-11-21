@@ -2,9 +2,7 @@ from enum import Enum
 import cv2
 
 class Brights(Enum):
-  
-    def getNormal(image):
-        return cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    
     def getBright1(gray_image):
         return cv2.convertScaleAbs(gray_image, alpha=1, beta=10)
     def getBright2(gray_image):
@@ -16,7 +14,6 @@ class Brights(Enum):
     def getBright5(gray_image):
         return cv2.convertScaleAbs(gray_image, alpha=1, beta=90)
 
-    NORMAL = ("Normal", getNormal)
     BRIGHT_1 = ("Brilho 10", getBright1)
     BRIGHT_2 = ("Brilho 30", getBright2)
     BRIGHT_3 = ("Brilho 50", getBright3)

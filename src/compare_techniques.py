@@ -11,33 +11,30 @@ import seaborn as sns
 import os
 from enums.tecniques import Techs
 from enums.bright_type import Brights
+from enums.combine_type import MedianBright
+from enums.resize_type import Sizes
 from PIL import Image, ImageEnhance
 
 fa = face_alignment.FaceAlignment(face_alignment.LandmarksType.TWO_D, flip_input=False)
-image_types = ['normal', 'gray', 'b_plus', 'b_minus', 'mean', 'median', 'n']
+
 def calcEuclideanDistance(x1, y1, x2, y2):
     return round(math.sqrt((x2 - x1)**2 + (y2 - y1)**2), 2)
 
-def initialize_distances():
-    all_distances = {}
-    all_points_distances = {}
-    for type in Brights:
-        all_distances[type.name] = []
-        all_points_distances[type.name] = []
-    return all_distances, all_points_distances
+all_distances = {}
+all_points_distances = {} 
+
+def initialize_distances(pipeline):
+    
+    for tech in pipeline:
+        all_distances[tech] = []
+        all_points_distances[tech] = []
         
-def readData():
+def readData(pipeline):
     folder_image_path = Path('images')
     folder_landmarks_path = 'landmarks/'
 
+    initialize_distances(pipeline)
 
-    all_distances = {}
-    all_points_distances = {}
-    for tech in Techs:
-        all_distances[tech.name] = []
-        all_points_distances[tech.name] = []
-
-    all_distances, all_points_distances = initialize_distances()
     cont = 0
     for file_image_path in folder_image_path.iterdir():
         #if cont == 50:
@@ -49,82 +46,39 @@ def readData():
             file_name = os.path.splitext(os.path.basename(file_image_path))[0]
             file_landmarks_path = f'{folder_landmarks_path}{file_name}_pts.mat'
 
-            all_distances, all_points_distances = calcPointsDiffs(file_image_path, file_landmarks_path, 
-                                            all_distances, all_points_distances)
+            all_distances, all_points_distances = calcPointsDiffs(file_image_path, file_landmarks_path, pipeline)
 
     #printGraph(all_points_distances)
     #print(all_points_distances)
-    graphic_bar.printGraphics(all_distances, image_types)
+    graphic_bar.printGraphics(all_distances)
 
-def createImages(image):
-    images = [image]
-    
-    gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-
-    images.append(gray_image) 
-    images.append(cv2.convertScaleAbs(gray_image, alpha=1, beta=50))
-    images.append(cv2.convertScaleAbs(gray_image, alpha=1, beta=-50))
-    images.append(cv2.blur(gray_image, (10, 10)))
-    images.append(cv2.medianBlur(gray_image, 5))
-    images.append(cv2.equalizeHist(gray_image))
-
-    #normalized_image = gray_image.astype(np.float32) / 255.0
-    #resized_image = cv2.resize(gray_image, (450, 450))
-    #images.append(resized_image)
-
-    return images
-
-def calcPointsDiffs(file_image_path, file_landmarks_path, all_distances, all_points_distances):
+def calcPointsDiffs(file_image_path, file_landmarks_path, pipeline):
     data = loadmat(file_landmarks_path)
     data_points = data['pts_2d']
 
-    original_image = io.imread(file_image_path)
-    
     img = cv2.imread(file_image_path)
-    images = createImages(img)
-    #gray_image = None
     gray_image = Techs.GRAY.getTech(img)
-    #print_landmarks(img, data_points)
+    print_landmarks(img, data_points)
 
-    format_img = None
-    #return getAllTechs(file_image_path, all_distances, all_points_distances, data_points, img)
-    return getBrightness(file_image_path, all_distances, all_points_distances, data_points, img, gray_image)
+    return getTechsResults(file_image_path, data_points, img, gray_image, pipeline)
 
-def getAllTechs(file_image_path, all_distances, all_points_distances, data_points, img):
-    for tech in Techs:
-        if tech.name == Techs.NORMAL.name:
-            format_img = img
-        elif tech.name == Techs.GRAY.name:
-            gray_image = tech.getTech(img)
-            format_img = gray_image
-        else:
-            format_img = tech.getTech(gray_image)
+def getTechsResults(file_image_path, data_points, normal_image, gray_image, pipeline):
 
-        prediction_points = fa.get_landmarks(format_img)
-        #print_landmarks(image, prediction_points[0])
-
+    for tech in pipeline:
+        entry_image = gray_image
+        if tech == Techs.NORMAL or tech == Techs.GRAY:
+            entry_image = normal_image
+        #else:
+         #   entry_image = gray_image
+        
+        format_image = tech.getTech(entry_image)
+        prediction_points = fa.get_landmarks(format_image)
         if prediction_points is not None:
+            print_landmarks(format_image, prediction_points[0])
             euclidean_distances, euclidean_mean = getEuclideanMetrics(file_image_path, data_points, prediction_points)
             if euclidean_distances is not None:
-                all_points_distances[tech.name].append(euclidean_distances)
-                all_distances[tech.name].append(euclidean_mean)
-            
-    return all_distances, all_points_distances
-
-def getBrightness(file_image_path, all_distances, all_points_distances, data_points, img, gray_image):
-    
-    for bright in Brights:
-        if bright.name == Brights.NORMAL.name:
-            format_img = img
-        else:
-            format_img = bright.getTech(gray_image)
-        prediction_points = fa.get_landmarks(format_img)
-
-        if prediction_points is not None:
-            euclidean_distances, euclidean_mean = getEuclideanMetrics(file_image_path, data_points, prediction_points)
-            if euclidean_distances is not None:
-                all_points_distances[bright.name].append(euclidean_distances)
-                all_distances[bright.name].append(euclidean_mean)
+                all_points_distances[tech].append(euclidean_distances)
+                all_distances[tech].append(euclidean_mean)
             
     return all_distances, all_points_distances
 
@@ -185,20 +139,21 @@ def printGraph(all_distances):
 
     plt.savefig('box.png')
 
-def sample ():
-    all_distances = {}
-    points_d = {}
-    for tech in Techs:
-        all_distances[tech.name] = []
-        points_d[tech.name] = []
+def sample(pipeline):
 
     file_name = "IBUG_image_003_1_6.jpg"
     points = "landmarks/IBUG_image_003_1_6_pts.mat"
-    all_distances, all_points = calcPointsDiffs(file_name, points, all_distances, points_d)
+
+    initialize_distances(pipeline)
+    all_distances, all_points = calcPointsDiffs(file_name, points, pipeline)
     print(all_distances)
     print(all_points)
     #printGraph(all_distances)
-    graphic_bar.printGraphics(all_distances, image_types)
+    graphic_bar.printGraphics(all_distances)
 
-#sample()
-readData()
+pipeline = [Techs.NORMAL, MedianBright.M_BRIGHT_1]
+#pipeline = [Techs.NORMAL, Brights.BRIGHT_1, Brights.BRIGHT_2, Brights.BRIGHT_3, Brights.BRIGHT_4, Brights.BRIGHT_5]
+#pipeline = [Techs.NORMAL, Techs.GRAY, Techs.BRIGHT_MINUS, Techs.BRIGHT_PLUS, Techs.MEAN, Techs.MEDIAN, Techs.HIST, Techs.BORDER]
+#pipeline = [Techs.NORMAL, Sizes.SIZE_1, Sizes.SIZE_2, Sizes.SIZE_3, Sizes.SIZE_4, Sizes.SIZE_5] 
+sample(pipeline)
+#readData(pipeline)
