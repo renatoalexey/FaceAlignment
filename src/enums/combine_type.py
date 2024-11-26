@@ -15,10 +15,10 @@ class MedianBright(Enum):
     def getSizeBorderBright(gray_image):
         return Brights.getBright1(Techs.getMedian(Sizes.getSize700(gray_image)))
 
-    MEDIAN_BRIGHT = ("Mediana Brilho 10", getMedianBright)
-    S_MEDIAN_BRIRHT = ("Resize Mediana Brilho 10", getSizeMedianBright)
+    MEDIAN_BRIGHT = ("Mediana \nBrilho 10", getMedianBright)
+    S_MEDIAN_BRIRHT = ("Resize Mediana \nBrilho 10", getSizeMedianBright)
     BORDER_BRIGHT = ("Borda Brilho 10", getBorderBright)
-    S_BORDER_BRIGHT = ("R B Mediana Brilho 10", getSizeBorderBright)
+    S_BORDER_BRIGHT = ("R B Mediana \nBrilho 10", getSizeBorderBright)
 
     def __init__(self, f_name, getTech):
         self.f_name = f_name

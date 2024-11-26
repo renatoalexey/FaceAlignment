@@ -40,8 +40,8 @@ def readData(pipeline):
 
     cont = 0
     for file_image_path in folder_image_path.iterdir():
-        #if cont == 300:
-            #break
+        if cont == 200:
+            break
         if(cont == 100 or cont == 500 or cont == 1000):
             print(f"Imagem n {cont}")
         cont +=1
@@ -53,7 +53,7 @@ def readData(pipeline):
 
     #printGraph(all_points_distances)
     #print(all_points_distances)
-    graphic_bar.printGraphics(all_distances)
+    graphic_bar.printGraphics(all_distances, all_points_distances)
 
 def calcPointsDiffs(file_image_path, file_landmarks_path, pipeline):
     data = loadmat(file_landmarks_path)
@@ -142,7 +142,7 @@ def printGraph(all_distances):
 
     #distances_mean = list(map(lambda input: np.mean(input) , sizes))
 
-    plt.figure(figsize=(10, 6))
+    plt.figure(figsize=(18, 6))
     sns.boxplot(data=all_distances['GRAY'])
 
     # Adicionando rótulos e título
@@ -167,7 +167,7 @@ def sample(pipeline):
 #pipeline = [Techs.NORMAL, MedianBright.MEDIAN_BRIGHT, MedianBright.S_MEDIAN_BRIRHT, MedianBright.BORDER_BRIGHT, MedianBright.S_BORDER_BRIGHT]
 #pipeline = [Techs.NORMAL, Brights.BRIGHT_1, Brights.BRIGHT_2, Brights.BRIGHT_3, Brights.BRIGHT_4, Brights.BRIGHT_5]
 #pipeline = [Techs.NORMAL, Techs.GRAY, Techs.BRIGHT_MINUS, Techs.BRIGHT_PLUS, Techs.MEAN, Techs.MEDIAN, Techs.HIST, Techs.BORDER]
-#pipeline = [Techs.NORMAL, Sizes.SIZE_450, Sizes.SIZE_900, Sizes.SIZE_700, Sizes.SIZE_300, Sizes.SIZE_150]  
+#pipeline = [Techs.NORMAL, Sizes.SIZE_900, Sizes.SIZE_700, Sizes.SIZE_300, Sizes.SIZE_150]  
 pipeline = [Techs.NORMAL, Techs.GRAY, Brights.BRIGHT_1, Techs.BRIGHT_PLUS, Techs.MEAN, Techs.MEDIAN, Techs.HIST, Techs.BORDER,
             MedianBright.S_MEDIAN_BRIRHT, Sizes.SIZE_700]
 #sample(pipeline)
