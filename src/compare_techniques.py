@@ -17,8 +17,11 @@ from PIL import Image, ImageEnhance
 
 fa = face_alignment.FaceAlignment(face_alignment.LandmarksType.TWO_D, flip_input=False)
 
+height_factor = 0
+width_factor = 0
+
 def calcEuclideanDistance(x1, y1, x2, y2):
-    return round(math.sqrt((x2 - x1)**2 + (y2 - y1)**2), 2)
+    return round(math.sqrt((x2 - x1*width_factor)**2 + (y2 - y1*height_factor)**2), 2)
 
 all_distances = {}
 all_points_distances = {} 
@@ -37,8 +40,8 @@ def readData(pipeline):
 
     cont = 0
     for file_image_path in folder_image_path.iterdir():
-        #if cont == 50:
-         #   break
+        #if cont == 300:
+            #break
         if(cont == 100 or cont == 500 or cont == 1000):
             print(f"Imagem n {cont}")
         cont +=1
@@ -58,7 +61,7 @@ def calcPointsDiffs(file_image_path, file_landmarks_path, pipeline):
 
     img = cv2.imread(file_image_path)
     gray_image = Techs.GRAY.getTech(img)
-    print_landmarks(img, data_points)
+    #print_landmarks(img, data_points)
 
     return getTechsResults(file_image_path, data_points, img, gray_image, pipeline)
 
@@ -68,17 +71,27 @@ def getTechsResults(file_image_path, data_points, normal_image, gray_image, pipe
         entry_image = gray_image
         if tech == Techs.NORMAL or tech == Techs.GRAY:
             entry_image = normal_image
-        #else:
-         #   entry_image = gray_image
         
         format_image = tech.getTech(entry_image)
         prediction_points = fa.get_landmarks(format_image)
+        
+        global height_factor
+        height_factor = normal_image.shape[0] / format_image.shape[0]
+        global width_factor 
+        width_factor = normal_image.shape[1] / format_image.shape[1]
+        
         if prediction_points is not None:
-            print_landmarks(format_image, prediction_points[0])
+            #print_landmarks(format_image, prediction_points[0])
             euclidean_distances, euclidean_mean = getEuclideanMetrics(file_image_path, data_points, prediction_points)
             if euclidean_distances is not None:
                 all_points_distances[tech].append(euclidean_distances)
                 all_distances[tech].append(euclidean_mean)
+            else:
+                all_points_distances[tech].append(-1)
+                all_distances[tech].append(-1)
+        else:
+            all_points_distances[tech].append(-1)
+            all_distances[tech].append(-1)
             
     return all_distances, all_points_distances
 
@@ -146,14 +159,16 @@ def sample(pipeline):
 
     initialize_distances(pipeline)
     all_distances, all_points = calcPointsDiffs(file_name, points, pipeline)
-    print(all_distances)
-    print(all_points)
+    #print(all_distances)
+    #print(all_points)
     #printGraph(all_distances)
     graphic_bar.printGraphics(all_distances)
 
-pipeline = [Techs.NORMAL, MedianBright.M_BRIGHT_1]
+#pipeline = [Techs.NORMAL, MedianBright.MEDIAN_BRIGHT, MedianBright.S_MEDIAN_BRIRHT, MedianBright.BORDER_BRIGHT, MedianBright.S_BORDER_BRIGHT]
 #pipeline = [Techs.NORMAL, Brights.BRIGHT_1, Brights.BRIGHT_2, Brights.BRIGHT_3, Brights.BRIGHT_4, Brights.BRIGHT_5]
 #pipeline = [Techs.NORMAL, Techs.GRAY, Techs.BRIGHT_MINUS, Techs.BRIGHT_PLUS, Techs.MEAN, Techs.MEDIAN, Techs.HIST, Techs.BORDER]
-#pipeline = [Techs.NORMAL, Sizes.SIZE_1, Sizes.SIZE_2, Sizes.SIZE_3, Sizes.SIZE_4, Sizes.SIZE_5] 
-sample(pipeline)
-#readData(pipeline)
+#pipeline = [Techs.NORMAL, Sizes.SIZE_450, Sizes.SIZE_900, Sizes.SIZE_700, Sizes.SIZE_300, Sizes.SIZE_150]  
+pipeline = [Techs.NORMAL, Techs.GRAY, Brights.BRIGHT_1, Techs.BRIGHT_PLUS, Techs.MEAN, Techs.MEDIAN, Techs.HIST, Techs.BORDER,
+            MedianBright.S_MEDIAN_BRIRHT, Sizes.SIZE_700]
+#sample(pipeline)
+readData(pipeline)

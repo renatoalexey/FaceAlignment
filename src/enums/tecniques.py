@@ -4,7 +4,8 @@ import cv2
 class Techs(Enum):
   
     def getNormal(image):
-        return cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        #return cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        return image
     def getGray(image):
         return cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     def getBrightPlus(gray_image):
