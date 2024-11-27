@@ -39,7 +39,7 @@ class Techs(Enum):
     BRIGHT_MINUS= ("Brilho -", getBrightMinus)
     MEAN = ("Média", getMean)
     MEDIAN = ("Mediana", getMedian)
-    HIST = ("Realce", getHist)
+    HIST = ("Equalização \nHistograma", getHist)
     BORDER = ("Borda", getBorder)
 
     def __init__(self, f_name, getTech):

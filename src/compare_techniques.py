@@ -40,8 +40,8 @@ def readData(pipeline):
 
     cont = 0
     for file_image_path in folder_image_path.iterdir():
-        if cont == 200:
-            break
+        #if cont == 50:
+         #   break
         if(cont == 100 or cont == 500 or cont == 1000):
             print(f"Imagem n {cont}")
         cont +=1
@@ -81,7 +81,7 @@ def getTechsResults(file_image_path, data_points, normal_image, gray_image, pipe
         width_factor = normal_image.shape[1] / format_image.shape[1]
         
         if prediction_points is not None:
-            #print_landmarks(format_image, prediction_points[0])
+            print_landmarks(format_image, data_points, prediction_points[0], tech.f_name)
             euclidean_distances, euclidean_mean = getEuclideanMetrics(file_image_path, data_points, prediction_points)
             if euclidean_distances is not None:
                 all_points_distances[tech].append(euclidean_distances)
@@ -110,14 +110,19 @@ def getEuclideanMetrics(file_image_path, data_points, prediction_points):
         print(f"An error occurred: {e}, Prediction points: {prediction_points}")
     return None, None
 
-def print_landmarks(img, points):
+def print_landmarks(img, points, points_face, title):
     
-    for i, point in enumerate(points):
+    #for i, point in enumerate(points):
+     #   x = round(point[0] / width_factor)
+      #  y = round(point[1] / height_factor)
+       # cv2.circle(img, (x, y), 2, (255, 0, 0), -1)
+
+    for i, point in enumerate(points_face):
         x = round(point[0])
         y = round(point[1])
         cv2.circle(img, (x, y), 2, (255, 0, 0), -1)
 
-    cv2.imshow("", img)
+    cv2.imshow(title, img)
     cv2.waitKey(0)
 
 def getDistances(data_points, prediction_points, l):
@@ -154,7 +159,7 @@ def printGraph(all_distances):
 
 def sample(pipeline):
 
-    file_name = "IBUG_image_003_1_6.jpg"
+    file_name = "02.jpg"
     points = "landmarks/IBUG_image_003_1_6_pts.mat"
 
     initialize_distances(pipeline)
@@ -162,13 +167,13 @@ def sample(pipeline):
     #print(all_distances)
     #print(all_points)
     #printGraph(all_distances)
-    graphic_bar.printGraphics(all_distances)
+    #graphic_bar.printGraphics(all_distances)
 
-#pipeline = [Techs.NORMAL, MedianBright.MEDIAN_BRIGHT, MedianBright.S_MEDIAN_BRIRHT, MedianBright.BORDER_BRIGHT, MedianBright.S_BORDER_BRIGHT]
-#pipeline = [Techs.NORMAL, Brights.BRIGHT_1, Brights.BRIGHT_2, Brights.BRIGHT_3, Brights.BRIGHT_4, Brights.BRIGHT_5]
 #pipeline = [Techs.NORMAL, Techs.GRAY, Techs.BRIGHT_MINUS, Techs.BRIGHT_PLUS, Techs.MEAN, Techs.MEDIAN, Techs.HIST, Techs.BORDER]
-#pipeline = [Techs.NORMAL, Sizes.SIZE_900, Sizes.SIZE_700, Sizes.SIZE_300, Sizes.SIZE_150]  
-pipeline = [Techs.NORMAL, Techs.GRAY, Brights.BRIGHT_1, Techs.BRIGHT_PLUS, Techs.MEAN, Techs.MEDIAN, Techs.HIST, Techs.BORDER,
-            MedianBright.S_MEDIAN_BRIRHT, Sizes.SIZE_700]
-#sample(pipeline)
-readData(pipeline)
+#pipeline = [Techs.NORMAL, Brights.BRIGHT_1, Brights.BRIGHT_2, Brights.BRIGHT_3, Brights.BRIGHT_4, Brights.BRIGHT_5]
+pipeline = [Techs.NORMAL, Sizes.SIZE_450, Sizes.SIZE_900, Sizes.SIZE_700, Sizes.SIZE_300, Sizes.SIZE_150]  
+#pipeline = [Techs.NORMAL, MedianBright.MEDIAN_BRIGHT, MedianBright.S_MEDIAN_BRIRHT, MedianBright.BORDER_BRIGHT, MedianBright.S_BORDER_BRIGHT]
+#pipeline = [Techs.NORMAL, Brights.BRIGHT_1, Techs.MEDIAN, Techs.HIST, Techs.BORDER,
+ #           MedianBright.S_MEDIAN_BRIRHT, Sizes.SIZE_700]
+sample(pipeline)
+#readData(pipeline)

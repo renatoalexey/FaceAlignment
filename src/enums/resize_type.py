@@ -15,7 +15,7 @@ class Sizes(Enum):
     def getSize150(gray_image):
         return cv2.resize(gray_image, (150, 150), interpolation=cv2.INTER_AREA)
 
-    SIZE_450 = ("Tam 450", getSize450)
+    SIZE_450 = ("450x450", getSize450)
     SIZE_900 = ("900x900", getSize90)
     SIZE_700 = ("700x700", getSize700)
     SIZE_300 = ("300x300", getSize300)

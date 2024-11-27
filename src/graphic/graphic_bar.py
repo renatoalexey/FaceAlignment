@@ -25,7 +25,7 @@ def printGraphics(all_distances, all_points_distances):
             #print(f"Size: {len(all_distances[tech])}")
 
 
-    plt.figure(figsize=(8, 6))
+    plt.figure(figsize=(8, 7))
     plt.bar(filters, values, color=colors, capsize=5)
 
     for i, value in enumerate(values):
@@ -33,9 +33,9 @@ def printGraphics(all_distances, all_points_distances):
 
     plt.ylim(0, 6)
     # Adicionando títulos e rótulos
-    #plt.title('Média da diferença entre os pontos fiduciais rotulados e os extraídos pelo \n Face Alignment após aplicação de filtro/técnica de pré-processamento')
+    plt.title('Média da diferença entre os pontos fiduciais rotulados e os extraídos pelo \n Face Alignment após aplicação de filtro/técnica de pré-processamento')
     #plt.title('Média da diferença entre os pontos fiduciais rotulados e os extraídos pelo \n Face Alignment após aplicação de redimensionamentos')
-    plt.title('Média da diferença entre os pontos fiduciais rotulados e os extraídos pelo \n Face Alignment após aplicação de brilhos')
+    #plt.title('Média da diferença entre os pontos fiduciais rotulados e os extraídos pelo \n Face Alignment após aplicação de brilhos')
     plt.xlabel('Filtros/técnicas')
     plt.ylabel('Diferença média em pixels')
 
@@ -66,13 +66,16 @@ def printGraphics(all_distances, all_points_distances):
             else:
                 best_sum[chaveMin] = 1
 
-    print(best_sum)
+    print(chaveMin)
     #print(new_values)
-    plt.bar(["Normal", "best"], [np.mean(normal_values), np.mean(new_values)], color=colors, capsize=5)
+    plt.bar(["Normal", "Melhor"], [np.mean(normal_values), np.mean(new_values)], color=colors, capsize=5)
     # Adicionando títulos e rótulos
     #plt.title('Média da diferença entre os pontos fiduciais rotulados e os extraídos pelo \n Face Alignment após aplicação de filtro/técnica de pré-processamento')
+    for i, value in enumerate([np.mean(normal_values), np.mean(new_values)]):
+        plt.text(i, value + 0.1, str(round(value, 2)), ha='center', va='bottom')
     plt.xlabel('Filtros/técnicas')
     plt.ylabel('Diferença média em pixels')
+    plt.ylim(0, 6)
 
     # Mostrar o gráfico
     plt.savefig("best.png")
@@ -92,14 +95,24 @@ def getBestTech(best_sum):
 
 def printBoxPlot(best_tech, best_distances):
 
-    valid_distances = list(filter(lambda num: num != -1, best_distances))
+    valid_distances = np.array(list(filter(lambda num: num != -1, best_distances)))
+    size = len(valid_distances[0])
+    new_data = [valid_distances[:, i].tolist() for i in range(size)]
+    split_index = len(new_data) // 2
+ #   print(valid_distances)
 
-    plt.figure(figsize=(18, 6))
-    sns.boxplot(data=valid_distances)
-
-    # Adicionando rótulos e título
+    plt.figure(figsize=(10, 6))
+    plt.boxplot(new_data[:split_index])
     plt.xlabel('Pontos fiduciais')
     plt.ylabel('Diferença em pixels')
     plt.title(f'Box plot da diferença entre os pontos fiduciais rotulados e os extraídos pelo \n Face Alignmentdiferença após aplicar {best_tech.f_name} por ponto fiducial')
 
-    plt.savefig('box.png')
+    plt.savefig('box1.png')
+
+    plt.figure(figsize=(10, 6))
+    plt.boxplot(new_data[split_index:], positions=[35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68])
+    plt.xlabel('Pontos fiduciais')
+    plt.ylabel('Diferença em pixels')
+    plt.title(f'Box plot da diferença entre os pontos fiduciais rotulados e os extraídos pelo \n Face Alignmentdiferença após aplicar {best_tech.f_name} por ponto fiducial')
+
+    plt.savefig('box2.png')
