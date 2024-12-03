@@ -105,7 +105,8 @@ def getTechsResults(file_image_path, data_points, normal_image, gray_image, pipe
 
 def writesPointsNotFound(file_image_path, tech, suffix):
     with open(points_file, 'a') as file:
-        file.write(f'tech: {tech.f_name} image: {file_image_path} - {suffix} \n')
+        #formatted_tech = tech.f_name.replace("\n", "")
+        file.write(f"tech: {tech.name} image: {file_image_path} - {suffix} \n")
 
 def getEuclideanMetrics(file_image_path, data_points, prediction_points):
     try: 
@@ -124,17 +125,17 @@ def getEuclideanMetrics(file_image_path, data_points, prediction_points):
 
 def print_landmarks(img, points, points_face, title):
     
-    #for i, point in enumerate(points):
-     #   x = round(point[0] / width_factor)
-      #  y = round(point[1] / height_factor)
-       # cv2.circle(img, (x, y), 2, (255, 0, 0), -1)
+    for i, point in enumerate(points):
+       x = round(point[0] / width_factor)
+       y = round(point[1] / height_factor)
+       cv2.circle(img, (x, y), 2, (0, 0, 255), -1)
 
     for i, point in enumerate(points_face):
         x = round(point[0])
         y = round(point[1])
         cv2.circle(img, (x, y), 2, (255, 0, 0), -1)
 
-    cv2.imshow(title, img)
+    cv2.imshow("", img)
     cv2.waitKey(0)
 
 def getDistances(data_points, prediction_points, l):
@@ -162,22 +163,20 @@ def sample(key, pipeline):
 
     initialize_distances(pipeline)
     all_distances, all_points = calcPointsDiffs(file_name, points, pipeline)
-    #print(all_distances)
-    #print(all_points)
-    #printGraph(all_distances)
-    graphic_bar.printGraphics(f"output/{key}", all_distances, all_points)
+    #graphic_bar.printGraphics(f"output/{key}", all_distances, all_points)
 
 pipeline1 = [Techs.NORMAL, Techs.GRAY, Techs.BRIGHT_MINUS, Techs.BRIGHT_PLUS, Techs.MEAN, Techs.MEDIAN, Techs.HIST, Techs.BORDER]
 pipeline2 = [Techs.NORMAL, Brights.BRIGHT_1, Brights.BRIGHT_2, Brights.BRIGHT_3, Brights.BRIGHT_4, Brights.BRIGHT_5]
-pipeline3 = [Techs.NORMAL, Sizes.SIZE_450, Sizes.SIZE_900, Sizes.SIZE_700, Sizes.SIZE_300, Sizes.SIZE_150]  
+pipeline3 = [Techs.NORMAL, Sizes.SIZE_900, Sizes.SIZE_700, Sizes.SIZE_300, Sizes.SIZE_150]  
 pipeline4 = [Techs.NORMAL, MedianBright.MEDIAN_BRIGHT, MedianBright.S_MEDIAN_BRIRHT, MedianBright.BORDER_BRIGHT, MedianBright.S_BORDER_BRIGHT]
 pipeline5 = [Techs.NORMAL, Brights.BRIGHT_1, Techs.MEDIAN, Techs.HIST, Techs.BORDER,
             MedianBright.S_MEDIAN_BRIRHT, Sizes.SIZE_300]
 pipeline6 = [TechsResize.NORMAL, TechsResize.BRIGHT_MINUS, TechsResize.BRIGHT_PLUS, 
              TechsResize.MEAN, TechsResize.MEDIAN, TechsResize.HIST, TechsResize.BORDER]
 
-pipelines = {"pip2": pipeline2, "pip3": pipeline3, "pip4": pipeline4, "pip5": pipeline5}
-#pipelines = {"pip5": pipeline5}
+#pipelines = {"pip2": pipeline2, "pip3": pipeline3, "pip4": pipeline4, "pip5": pipeline5}
+pipelines = {"pip7": [Sizes.SIZE_300]}
+#pipelines = {"pip1": [Techs.NORMAL, Techs.MEAN, Techs.MEDIAN]}
 
 if os.path.exists(points_file):
     os.remove(points_file)

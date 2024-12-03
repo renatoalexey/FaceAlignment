@@ -36,7 +36,7 @@ def printGraphics(graph_name, all_distances, all_points_distances):
     for i, value in enumerate(values):
         plt.text(i - 0.2, value + 0.1, str(round(value, 2)), ha='center', va='bottom')
 
-    plt.ylim(0, 9)
+    plt.ylim(0, 15)
     # Adicionando títulos e rótulos
     #plt.title('Média da diferença entre os pontos fiduciais rotulados e os extraídos pelo \n Face Alignment após aplicação de filtro/técnica de pré-processamento')
     #plt.title('Média da diferença entre os pontos fiduciais rotulados e os extraídos pelo \n Face Alignment após aplicação de redimensionamentos')
@@ -109,7 +109,7 @@ def printBoxPlot(graph_name, best_tech, best_distances):
  #   print(valid_distances)
 
     plt.figure(figsize=(10, 6))
-    plt.boxplot(new_data[:split_index], whis=3)
+    plt.boxplot(new_data[:split_index], whis=4.5)
     plt.xlabel('Pontos fiduciais')
     plt.ylabel('Diferença em pixels')
     #plt.title(f'Box plot da diferença entre os pontos fiduciais rotulados e os extraídos pelo \n Face Alignmentdiferença após aplicar {best_tech.f_name} por ponto fiducial')
@@ -117,7 +117,7 @@ def printBoxPlot(graph_name, best_tech, best_distances):
     plt.savefig(f'{graph_name}_box1.png')
 
     plt.figure(figsize=(10, 6))
-    plt.boxplot(new_data[split_index:], positions=[35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68], whis=3)
+    plt.boxplot(new_data[split_index:], positions=[35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68], whis=4.5)
     plt.xlabel('Pontos fiduciais')
     plt.ylabel('Diferença em pixels')
     #plt.title(f'Box plot da diferença entre os pontos fiduciais rotulados e os extraídos pelo \n Face Alignmentdiferença após aplicar {best_tech.f_name} por ponto fiducial')

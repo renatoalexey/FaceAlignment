@@ -13,7 +13,7 @@ class MedianBright(Enum):
     def getBorderBright(gray_image):
         return Brights.getBright1(Techs.getBorder(gray_image))
     def getSizeBorderBright(gray_image):
-        return Brights.getBright1(Techs.getMedian(Sizes.getSize300(gray_image)))
+        return Brights.getBright1(Techs.getBorder(Sizes.getSize300(gray_image)))
 
     MEDIAN_BRIGHT = ("Mediana \nBrilho 10", getMedianBright)
     S_MEDIAN_BRIRHT = ("300x300 \nMediana \nBrilho 10", getSizeMedianBright)
