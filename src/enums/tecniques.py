@@ -33,10 +33,10 @@ class Techs(Enum):
                     copy[i][j] = 0
         return copy
 
-    NORMAL = ("Normal", getNormal)
+    NORMAL = ("Original", getNormal)
     GRAY = ("Cinza", getGray)
-    BRIGHT_PLUS = ("Brilho +", getBrightPlus)
-    BRIGHT_MINUS= ("Brilho -", getBrightMinus)
+    BRIGHT_PLUS = ("Brilho +50", getBrightPlus)
+    BRIGHT_MINUS= ("Brilho -50", getBrightMinus)
     MEAN = ("Média", getMean)
     MEDIAN = ("Mediana", getMedian)
     HIST = ("Equalização \nHistograma", getHist)

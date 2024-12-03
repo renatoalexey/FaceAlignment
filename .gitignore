@@ -3,3 +3,9 @@
 
 # Ignorar a pasta de dependências
 output/
+
+src/enums/__pycache__/
+
+src/graphic/__pycache__/
+
+.python-version

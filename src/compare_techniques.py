@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import os
 from enums.tecniques import Techs
+from enums.tecniques_resize import TechsResize
 from enums.bright_type import Brights
 from enums.combine_type import MedianBright
 from enums.resize_type import Sizes
@@ -20,6 +21,8 @@ fa = face_alignment.FaceAlignment(face_alignment.LandmarksType.TWO_D, flip_input
 height_factor = 0
 width_factor = 0
 
+points_file = 'output/points_not_found.txt'
+
 def calcEuclideanDistance(x1, y1, x2, y2):
     return round(math.sqrt((x2 - x1*width_factor)**2 + (y2 - y1*height_factor)**2), 2)
 
@@ -27,12 +30,14 @@ all_distances = {}
 all_points_distances = {} 
 
 def initialize_distances(pipeline):
-    
+    global all_distances, all_points_distances
+    all_distances = {}
+    all_points_distances = {} 
     for tech in pipeline:
         all_distances[tech] = []
         all_points_distances[tech] = []
         
-def readData(pipeline):
+def readData(key, pipeline):
     folder_image_path = Path('images')
     folder_landmarks_path = 'landmarks/'
 
@@ -41,7 +46,7 @@ def readData(pipeline):
     cont = 0
     for file_image_path in folder_image_path.iterdir():
         #if cont == 50:
-         #   break
+           # break
         if(cont == 100 or cont == 500 or cont == 1000):
             print(f"Imagem n {cont}")
         cont +=1
@@ -53,12 +58,12 @@ def readData(pipeline):
 
     #printGraph(all_points_distances)
     #print(all_points_distances)
-    graphic_bar.printGraphics(all_distances, all_points_distances)
+    print(f"Cont: {cont}")
+    graphic_bar.printGraphics(f"output/{key}", all_distances, all_points_distances)
 
 def calcPointsDiffs(file_image_path, file_landmarks_path, pipeline):
     data = loadmat(file_landmarks_path)
     data_points = data['pts_2d']
-
     img = cv2.imread(file_image_path)
     gray_image = Techs.GRAY.getTech(img)
     #print_landmarks(img, data_points)
@@ -73,6 +78,7 @@ def getTechsResults(file_image_path, data_points, normal_image, gray_image, pipe
             entry_image = normal_image
         
         format_image = tech.getTech(entry_image)
+        
         prediction_points = fa.get_landmarks(format_image)
         
         global height_factor
@@ -81,7 +87,7 @@ def getTechsResults(file_image_path, data_points, normal_image, gray_image, pipe
         width_factor = normal_image.shape[1] / format_image.shape[1]
         
         if prediction_points is not None:
-            print_landmarks(format_image, data_points, prediction_points[0], tech.f_name)
+            #print_landmarks(format_image, data_points, prediction_points[0], tech.f_name)
             euclidean_distances, euclidean_mean = getEuclideanMetrics(file_image_path, data_points, prediction_points)
             if euclidean_distances is not None:
                 all_points_distances[tech].append(euclidean_distances)
@@ -89,11 +95,17 @@ def getTechsResults(file_image_path, data_points, normal_image, gray_image, pipe
             else:
                 all_points_distances[tech].append(-1)
                 all_distances[tech].append(-1)
+                writesPointsNotFound(file_image_path, tech, "euclidean")
         else:
             all_points_distances[tech].append(-1)
             all_distances[tech].append(-1)
-            
+            writesPointsNotFound(file_image_path, tech, "")
+                
     return all_distances, all_points_distances
+
+def writesPointsNotFound(file_image_path, tech, suffix):
+    with open(points_file, 'a') as file:
+        file.write(f'tech: {tech.f_name} image: {file_image_path} - {suffix} \n')
 
 def getEuclideanMetrics(file_image_path, data_points, prediction_points):
     try: 
@@ -143,23 +155,9 @@ def sum_points_diffs(all_points_distances, euclidean_distances, type):
         all_points_distances[type] = temp
     return all_points_distances
 
-def printGraph(all_distances):
+def sample(key, pipeline):
 
-    #distances_mean = list(map(lambda input: np.mean(input) , sizes))
-
-    plt.figure(figsize=(18, 6))
-    sns.boxplot(data=all_distances['GRAY'])
-
-    # Adicionando rótulos e título
-    plt.xlabel('Eixo X')
-    plt.ylabel('Eixo Y')
-    plt.title('Pontos')
-
-    plt.savefig('box.png')
-
-def sample(pipeline):
-
-    file_name = "02.jpg"
+    file_name = "IBUG_image_003_1_6.jpg"
     points = "landmarks/IBUG_image_003_1_6_pts.mat"
 
     initialize_distances(pipeline)
@@ -167,13 +165,28 @@ def sample(pipeline):
     #print(all_distances)
     #print(all_points)
     #printGraph(all_distances)
-    #graphic_bar.printGraphics(all_distances)
+    graphic_bar.printGraphics(f"output/{key}", all_distances, all_points)
 
-#pipeline = [Techs.NORMAL, Techs.GRAY, Techs.BRIGHT_MINUS, Techs.BRIGHT_PLUS, Techs.MEAN, Techs.MEDIAN, Techs.HIST, Techs.BORDER]
-#pipeline = [Techs.NORMAL, Brights.BRIGHT_1, Brights.BRIGHT_2, Brights.BRIGHT_3, Brights.BRIGHT_4, Brights.BRIGHT_5]
-pipeline = [Techs.NORMAL, Sizes.SIZE_450, Sizes.SIZE_900, Sizes.SIZE_700, Sizes.SIZE_300, Sizes.SIZE_150]  
-#pipeline = [Techs.NORMAL, MedianBright.MEDIAN_BRIGHT, MedianBright.S_MEDIAN_BRIRHT, MedianBright.BORDER_BRIGHT, MedianBright.S_BORDER_BRIGHT]
-#pipeline = [Techs.NORMAL, Brights.BRIGHT_1, Techs.MEDIAN, Techs.HIST, Techs.BORDER,
- #           MedianBright.S_MEDIAN_BRIRHT, Sizes.SIZE_700]
-sample(pipeline)
-#readData(pipeline)
+pipeline1 = [Techs.NORMAL, Techs.GRAY, Techs.BRIGHT_MINUS, Techs.BRIGHT_PLUS, Techs.MEAN, Techs.MEDIAN, Techs.HIST, Techs.BORDER]
+pipeline2 = [Techs.NORMAL, Brights.BRIGHT_1, Brights.BRIGHT_2, Brights.BRIGHT_3, Brights.BRIGHT_4, Brights.BRIGHT_5]
+pipeline3 = [Techs.NORMAL, Sizes.SIZE_450, Sizes.SIZE_900, Sizes.SIZE_700, Sizes.SIZE_300, Sizes.SIZE_150]  
+pipeline4 = [Techs.NORMAL, MedianBright.MEDIAN_BRIGHT, MedianBright.S_MEDIAN_BRIRHT, MedianBright.BORDER_BRIGHT, MedianBright.S_BORDER_BRIGHT]
+pipeline5 = [Techs.NORMAL, Brights.BRIGHT_1, Techs.MEDIAN, Techs.HIST, Techs.BORDER,
+            MedianBright.S_MEDIAN_BRIRHT, Sizes.SIZE_300]
+pipeline6 = [TechsResize.NORMAL, TechsResize.BRIGHT_MINUS, TechsResize.BRIGHT_PLUS, 
+             TechsResize.MEAN, TechsResize.MEDIAN, TechsResize.HIST, TechsResize.BORDER]
+
+pipelines = {"pip2": pipeline2, "pip3": pipeline3, "pip4": pipeline4, "pip5": pipeline5}
+#pipelines = {"pip5": pipeline5}
+
+if os.path.exists(points_file):
+    os.remove(points_file)
+
+if os.path.exists('output/sums.txt'):
+    os.remove('output/sums.txt')  
+    
+for key, pipeline in pipelines.items():
+    with open(points_file, 'a') as file:
+        file.write(f'pipeline: {key} \n')
+    #sample(key, pipeline)
+    readData(key, pipeline)
