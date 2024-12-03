@@ -1,1 +1,5 @@
-src/graphic/__pycache__/
+# Ignorar arquivos de log
+*.png
+
+# Ignorar a pasta de dependências
+output/
