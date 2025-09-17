@@ -5,6 +5,7 @@ from pathlib import Path
 from graphic import graphic_bar
 import face_alignment
 import cv2
+import json
 import math
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -15,6 +16,8 @@ from enums.bright_type import Brights
 from enums.combine_type import MedianBright
 from enums.resize_type import Sizes
 from PIL import Image, ImageEnhance
+
+results_path = 'output/results.txt'
 
 fa = face_alignment.FaceAlignment(face_alignment.LandmarksType.TWO_D, flip_input=False)
 
@@ -59,6 +62,12 @@ def readData(key, pipeline):
     #printGraph(all_points_distances)
     #print(all_points_distances)
     print(f"Cont: {cont}")
+
+    with open('output/results.txt', 'a') as file:
+        file.write(json.dumps({str(k): v for k, v in all_distances.items()}))
+        file.write(json.dumps({str(k): v for k, v in all_points_distances.items()}))
+        #file.write(json.dumps(all_points_distances))
+
     graphic_bar.printGraphics(f"output/{key}", all_distances, all_points_distances)
 
 def calcPointsDiffs(file_image_path, file_landmarks_path, pipeline):
@@ -73,7 +82,8 @@ def calcPointsDiffs(file_image_path, file_landmarks_path, pipeline):
 def getTechsResults(file_image_path, data_points, normal_image, gray_image, pipeline):
 
     for tech in pipeline:
-        entry_image = gray_image
+        #entry_image = gray_image
+        entry_image = normal_image
         if tech == Techs.NORMAL or tech == Techs.GRAY:
             entry_image = normal_image
         
@@ -87,7 +97,7 @@ def getTechsResults(file_image_path, data_points, normal_image, gray_image, pipe
         width_factor = normal_image.shape[1] / format_image.shape[1]
         
         if prediction_points is not None:
-            #print_landmarks(format_image, data_points, prediction_points[0], tech.f_name)
+            print_landmarks(format_image, data_points, prediction_points[0], tech.f_name)
             euclidean_distances, euclidean_mean = getEuclideanMetrics(file_image_path, data_points, prediction_points)
             if euclidean_distances is not None:
                 all_points_distances[tech].append(euclidean_distances)
@@ -125,15 +135,27 @@ def getEuclideanMetrics(file_image_path, data_points, prediction_points):
 
 def print_landmarks(img, points, points_face, title):
     
-    for i, point in enumerate(points):
-       x = round(point[0] / width_factor)
-       y = round(point[1] / height_factor)
-       cv2.circle(img, (x, y), 2, (0, 0, 255), -1)
+    #for i, point in enumerate(points):
+     #  x = round(point[0] / width_factor)
+      # y = round(point[1] / height_factor)
+      # cv2.circle(img, (x, y), 2, (0, 0, 255), -1)
 
     for i, point in enumerate(points_face):
         x = round(point[0])
         y = round(point[1])
         cv2.circle(img, (x, y), 2, (255, 0, 0), -1)
+
+        # Coloca o número ao lado
+        cv2.putText(
+            img,
+            str(i),                 # texto (índice)
+            (x + 5, y - 5),         # posição (um pouco deslocado do ponto)
+            cv2.FONT_HERSHEY_SIMPLEX, # fonte
+            0.2,                    # tamanho da fonte
+            (255, 0, 0),            # cor (vermelho em BGR)
+            1,                      # espessura
+            cv2.LINE_AA             # suavização
+        )
 
     cv2.imshow("", img)
     cv2.waitKey(0)
@@ -158,7 +180,7 @@ def sum_points_diffs(all_points_distances, euclidean_distances, type):
 
 def sample(key, pipeline):
 
-    file_name = "IBUG_image_003_1_6.jpg"
+    file_name = "01_f.jpg"
     points = "landmarks/IBUG_image_003_1_6_pts.mat"
 
     initialize_distances(pipeline)
@@ -174,9 +196,9 @@ pipeline5 = [Techs.NORMAL, Brights.BRIGHT_1, Techs.MEDIAN, Techs.HIST, Techs.BOR
 pipeline6 = [TechsResize.NORMAL, TechsResize.BRIGHT_MINUS, TechsResize.BRIGHT_PLUS, 
              TechsResize.MEAN, TechsResize.MEDIAN, TechsResize.HIST, TechsResize.BORDER]
 
-#pipelines = {"pip2": pipeline2, "pip3": pipeline3, "pip4": pipeline4, "pip5": pipeline5}
-pipelines = {"pip7": [Sizes.SIZE_300]}
-#pipelines = {"pip1": [Techs.NORMAL, Techs.MEAN, Techs.MEDIAN]}
+#pipelines = {"pip5": pipeline5}
+#pipelines = {"pip7": [Sizes.SIZE_300]}
+pipelines = {"pip1": [Techs.NORMAL, Sizes.SIZE_300]}
 
 if os.path.exists(points_file):
     os.remove(points_file)
@@ -184,8 +206,11 @@ if os.path.exists(points_file):
 if os.path.exists('output/sums.txt'):
     os.remove('output/sums.txt')  
     
+if os.path.exists(results_path):
+    os.remove(results_path)
+
 for key, pipeline in pipelines.items():
     with open(points_file, 'a') as file:
         file.write(f'pipeline: {key} \n')
-    #sample(key, pipeline)
-    readData(key, pipeline)
+    sample(key, pipeline)
+    #readData(key, pipeline)

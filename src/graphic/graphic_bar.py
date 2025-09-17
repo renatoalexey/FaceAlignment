@@ -30,13 +30,13 @@ def printGraphics(graph_name, all_distances, all_points_distances):
 
     errors = [ [mean - min_val, max_val - mean] for mean, min_val, max_val in zip(values, mins, maxs)]
     errors = np.array(errors).T  # Transpor para uso em `yerr`
-    plt.figure(figsize=(8, 7))
+    plt.figure(figsize=(8, 6))
     plt.bar(filters, values, color=colors, capsize=5, yerr=stds)
 
     for i, value in enumerate(values):
         plt.text(i - 0.2, value + 0.1, str(round(value, 2)), ha='center', va='bottom')
 
-    plt.ylim(0, 15)
+    plt.ylim(0, 9)
     # Adicionando títulos e rótulos
     #plt.title('Média da diferença entre os pontos fiduciais rotulados e os extraídos pelo \n Face Alignment após aplicação de filtro/técnica de pré-processamento')
     #plt.title('Média da diferença entre os pontos fiduciais rotulados e os extraídos pelo \n Face Alignment após aplicação de redimensionamentos')
@@ -78,10 +78,10 @@ def printGraphics(graph_name, all_distances, all_points_distances):
     # Adicionando títulos e rótulos
     #plt.title('Média da diferença entre os pontos fiduciais rotulados e os extraídos pelo \n Face Alignment após aplicação de filtro/técnica de pré-processamento')
     for i, value in enumerate([np.mean(normal_values), np.mean(new_values)]):
-        plt.text(i, value + 0.1, str(round(value, 2)), ha='center', va='bottom')
+        plt.text(i - 0.2, value + 0.1, str(round(value, 2)), ha='center', va='bottom')
     plt.xlabel('Técnicas/filtros')
     plt.ylabel('Diferença média em pixels')
-    plt.ylim(0, 7)
+    plt.ylim(0, 6)
 
     # Mostrar o gráfico
     plt.savefig(f"{graph_name}_best.png")
@@ -108,7 +108,7 @@ def printBoxPlot(graph_name, best_tech, best_distances):
     split_index = len(new_data) // 2
  #   print(valid_distances)
 
-    plt.figure(figsize=(10, 6))
+    plt.figure(figsize=(12, 7))
     plt.boxplot(new_data[:split_index], whis=4.5)
     plt.xlabel('Pontos fiduciais')
     plt.ylabel('Diferença em pixels')
@@ -116,7 +116,7 @@ def printBoxPlot(graph_name, best_tech, best_distances):
 
     plt.savefig(f'{graph_name}_box1.png')
 
-    plt.figure(figsize=(10, 6))
+    plt.figure(figsize=(12, 7))
     plt.boxplot(new_data[split_index:], positions=[35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68], whis=4.5)
     plt.xlabel('Pontos fiduciais')
     plt.ylabel('Diferença em pixels')
