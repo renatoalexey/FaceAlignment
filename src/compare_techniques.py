@@ -180,7 +180,7 @@ def sum_points_diffs(all_points_distances, euclidean_distances, type):
 
 def sample(key, pipeline):
 
-    file_name = "01_f.jpg"
+    file_name = "01.jpg"
     points = "landmarks/IBUG_image_003_1_6_pts.mat"
 
     initialize_distances(pipeline)
