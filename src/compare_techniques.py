@@ -140,7 +140,7 @@ def print_landmarks(img, points, points_face, title):
       # y = round(point[1] / height_factor)
       # cv2.circle(img, (x, y), 2, (0, 0, 255), -1)
 
-    for i, point in enumerate(points_face):
+    for i, point in enumerate(points_face, start=1):
         x = round(point[0])
         y = round(point[1])
         cv2.circle(img, (x, y), 2, (255, 0, 0), -1)
@@ -198,7 +198,7 @@ pipeline6 = [TechsResize.NORMAL, TechsResize.BRIGHT_MINUS, TechsResize.BRIGHT_PL
 
 #pipelines = {"pip5": pipeline5}
 #pipelines = {"pip7": [Sizes.SIZE_300]}
-pipelines = {"pip1": [Techs.NORMAL, Sizes.SIZE_300]}
+pipelines = {"pip1": [Techs.NORMAL]}
 
 if os.path.exists(points_file):
     os.remove(points_file)
