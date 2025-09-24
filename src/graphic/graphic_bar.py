@@ -24,9 +24,7 @@ def printGraphics(graph_name, all_distances, all_points_distances):
             stds.append(np.std(valid_distances))
             mins.append(np.min(valid_distances))
             maxs.append(np.max(valid_distances))
-            #print(f"Filtro: {tech.f_name} Média: {np.mean(valid_distances)}")
-            #print(f"The five smallest values are: {heapq.nsmallest(5, valid_distances)}")
-            #print(f"Size: {len(all_distances[tech])}")
+           
 
     errors = [ [mean - min_val, max_val - mean] for mean, min_val, max_val in zip(values, mins, maxs)]
     errors = np.array(errors).T  # Transpor para uso em `yerr`
@@ -45,9 +43,12 @@ def printGraphics(graph_name, all_distances, all_points_distances):
     plt.ylabel('Diferença média em pixels')
 
     # Mostrar o gráfico
-    plt.savefig(f"{graph_name}_comparassion.png")
+    plt.savefig(f"{graph_name}_comparassion.png")    
+
+def getBestSum(all_distances, normal_values, colors, graph_name, all_points_distances):
 
     plt.clf()
+
     chaves = all_distances.keys()
     data_size = len(all_distances[list(chaves)[0]])
     new_values = []
@@ -88,7 +89,7 @@ def printGraphics(graph_name, all_distances, all_points_distances):
 
     best_tech = getBestTech(best_sum)
     printBoxPlot(graph_name, best_tech, all_points_distances[best_tech])
-    
+
 def getBestTech(best_sum):
     best_tech = None
     sum_temp = -1
