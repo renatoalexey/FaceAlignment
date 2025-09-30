@@ -6,34 +6,10 @@ import numpy as np
 from PIL import Image
 
 correspondet_points = {1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 10, 10: 18, 11: 20, 12: 23, 13: 37, 15: 38, 17: 40, 18: 48, 19: 28, 20: 29, 21: 30, 22: 31, 25: 32, 28: 53, 26: 49, 29: 13} 
-
-def printGraphics(graph_name, all_distances):
-    plt.clf()
-
-    colors = ['lightskyblue']
-    
-    valid_distances = list(filter(lambda num: num != -1, all_distances))
-    values = np.mean(valid_distances)
-    stds = np.std(valid_distances)
-    mins = np.min(valid_distances)
-    maxs = np.max(valid_distances)
-           
-
-    errors = [ [mean - min_val, max_val - mean] for mean, min_val, max_val in zip(values, mins, maxs)]
-    errors = np.array(errors).T  # Transpor para uso em `yerr`
-    plt.figure(figsize=(8, 6))
-    plt.bar("teste", values, color=colors, capsize=5, yerr=stds)
-
-    #for i, value in enumerate(values):
-     #   plt.text(i - 0.2, value + 0.1, str(round(value, 2)), ha='center', va='bottom')
-
-    # Adicionando títulos e rótulos
-    plt.xlabel('Técnicas/Filtros')
-    plt.ylabel('Diferença média em pixels')
-
-    # Mostrar o gráfico
-    plt.savefig(f"{graph_name}_comparassion.png") 
-
+vertical_point_a = 11
+vertical_point_b = 8
+horizontal_point_a = 0
+horizontal_point_b = 18
 
 def writesPointsNotFound(image_path, face_detected, all_distances):
     with open("output/cfp_resolutions.txt", 'a') as file:
@@ -106,26 +82,27 @@ def get_ground_truth_points(fiducials_folder):
                 x, y = line.split(',')
                 x = float(x)
                 y = float(y)
-                
                 ground_truth_pts.append((x, y))
 
     return ground_truth_pts
     
 def compare_points(ground_truth_pts, fa_pts):
     all_distances = []
+    vertical_distance = calcEuclideanDistance(ground_truth_pts[vertical_point_a][0], ground_truth_pts[vertical_point_a][1],
+                                              ground_truth_pts[vertical_point_b][0], ground_truth_pts[vertical_point_b][1])
+    
+    horizontal_distance = calcEuclideanDistance(ground_truth_pts[horizontal_point_a][0], ground_truth_pts[horizontal_point_a][1],
+                                              ground_truth_pts[horizontal_point_b][0], ground_truth_pts[horizontal_point_b][1])
     for i, groud_truth_point in enumerate(ground_truth_pts, start=1):
         if correspondet_points.get(i) is not None:
             fa_point = fa_pts[0][correspondet_points.get(i)]
             distance = calcEuclideanDistance(groud_truth_point[0], groud_truth_point[1],
-                                  fa_point[0], fa_point[0])    
+                        fa_point[0], fa_point[0], vertical_distance, horizontal_distance)    
             all_distances.append(distance)
-            #with open("output/distances.txt", 'a') as file:
-             #   file.write(f"Distance: {distance}\n")
     return all_distances
 
-
-def calcEuclideanDistance(x1, y1, x2, y2):
-    return round(math.sqrt((x2 - x1)**2 + (y2 - y1)**2), 2)
+def calcEuclideanDistance(x1, y1, x2, y2, vertical_distance=1, horizontal_distance=1):
+    return round(math.sqrt( ( (x2 - x1) / horizontal_distance ) **2 + ( (y2 - y1) / vertical_distance ) **2), 2)
 
 if os.path.exists('output/cfp_resolutions.txt'):
     os.remove('output/cfp_resolutions.txt')  
