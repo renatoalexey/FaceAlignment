@@ -28,14 +28,14 @@ def writesPointsNotFound(image_path, face_detected, all_distances):
 
 
 
-#ground_truth_points_path = "/home/renatoalexey/Documents/Bases/cfp-dataset/Data/Fiducials"
-cfp_ground_truth_points_path = "F:\\Bases\\cfp-dataset\\Data\\Fiducials"
-#cfp_path = "/home/renatoalexey/Documents/Bases/cfp-dataset/Data/Images"
-cfp_images_path = "F:\\Bases\\cfp-dataset\\Data\\Images"
+cfp_ground_truth_points_path = "/home/renatoalexey/Documents/Bases/cfp-dataset/Data/Fiducials"
+#cfp_ground_truth_points_path = "F:\\Bases\\cfp-dataset\\Data\\Fiducials"
+cfp_images_path = "/home/renatoalexey/Documents/Bases/cfp-dataset/Data/Images"
+#cfp_images_path = "F:\\Bases\\cfp-dataset\\Data\\Images"
 
 def get_ground_truth_file(base_path, name, file_name ):
     file_name = file_name.split('.')[0]
-    return f"{os.path.join(base_path, name)}\\profile\\{file_name}.txt"
+    return f"{os.path.join(base_path, name)}/profile/{file_name}.txt"
 
 def run():
     fa = face_alignment.FaceAlignment(face_alignment.LandmarksType.TWO_D, flip_input=False)
@@ -44,7 +44,7 @@ def run():
         #if i > 5: break
         folder_path = os.path.join(cfp_images_path, nome)
         if os.path.isdir(folder_path) and nome.isdigit():
-            path_images_folder = f"{folder_path}\\profile"
+            path_images_folder = f"{folder_path}/profile"
             print(f"Pasta encontrada: {folder_path}")
             for image_name in os.listdir(path_images_folder):
                 image_path = os.path.join(path_images_folder, image_name)
@@ -102,9 +102,9 @@ def compare_points(ground_truth_pts, fa_pts):
 def calcEuclideanDistance(x1, y1, x2, y2, vertical_distance=1, horizontal_distance=1):
     return round(math.sqrt( ( (x2 - x1) / horizontal_distance ) **2 + ( (y2 - y1) / vertical_distance ) **2), 2)
 
-if os.path.exists('output/cfp_resolutions.txt'):
-    os.remove('output/cfp_resolutions.txt')  
+#if os.path.exists('output/cfp_resolutions.txt'):
+    #os.remove('output/cfp_resolutions.txt')  
 
-if os.path.exists('output/distances.txt'):
-    os.remove('output/distances.txt')  
+#if os.path.exists('output/distances.txt'):
+ #   os.remove('output/distances.txt')  
 run()
