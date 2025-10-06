@@ -28,35 +28,33 @@ def writesPointsNotFound(image_path, face_detected, all_distances):
 
 
 
-ground_truth_points_path = "/home/renatoalexey/Documents/Bases/cfp-dataset/Data/Fiducials"
-#ground_truth_points_path = "F:\\Bases\\cfp-dataset\\Data\\Fiducials"
+#ground_truth_points_path = "/home/renatoalexey/Documents/Bases/cfp-dataset/Data/Fiducials"
+cfp_ground_truth_points_path = "F:\\Bases\\cfp-dataset\\Data\\Fiducials"
+#cfp_path = "/home/renatoalexey/Documents/Bases/cfp-dataset/Data/Images"
+cfp_images_path = "F:\\Bases\\cfp-dataset\\Data\\Images"
 
-def get_arquives_folder(base_path, name, file_name):
+def get_ground_truth_file(base_path, name, file_name ):
     file_name = file_name.split('.')[0]
-    return f"{os.path.join(base_path, name)}/profile/{file_name}.txt"
+    return f"{os.path.join(base_path, name)}\\profile\\{file_name}.txt"
 
 def run():
     fa = face_alignment.FaceAlignment(face_alignment.LandmarksType.TWO_D, flip_input=False)
-    cfp_path = "/home/renatoalexey/Documents/Bases/cfp-dataset/Data/Images"
-    #cfp_path = "F:\\Bases\\cfp-dataset\\Data\\Images"
-
     i = 0
-    for nome in os.listdir(cfp_path):
+    for nome in os.listdir(cfp_images_path):
         #if i > 5: break
-        folder_path = os.path.join(cfp_path, nome)
+        folder_path = os.path.join(cfp_images_path, nome)
         if os.path.isdir(folder_path) and nome.isdigit():
-            path_images_folder = f"{folder_path}/profile"
+            path_images_folder = f"{folder_path}\\profile"
             print(f"Pasta encontrada: {folder_path}")
             for image_name in os.listdir(path_images_folder):
                 image_path = os.path.join(path_images_folder, image_name)
-                #print(f"Imagem encontrada: {image_name}")
                 try:
                     prediction_points = fa.get_landmarks(image_path)
                     face_detected = False
                     if prediction_points is not None:
                         #print("Imagem processada")
                         face_detected = True
-                        gt_points = get_ground_truth_points(get_arquives_folder(ground_truth_points_path, nome, image_name))
+                        gt_points = get_ground_truth_points(get_ground_truth_file(cfp_ground_truth_points_path, nome, image_name))
                         #print(f"Chegou aqui 1: ${len(gt_points)}")
                         all_distances = compare_points(gt_points, prediction_points)
                         #printGraphics("teste2", all_distances)
@@ -78,7 +76,7 @@ def get_ground_truth_points(fiducials_folder):
     if os.path.exists(fiducials_folder):
         with open(fiducials_folder, 'r') as file:
             lines = file.readlines()
-            for i, line in enumerate(lines, start=1):
+            for line in lines:
                 x, y = line.split(',')
                 x = float(x)
                 y = float(y)
