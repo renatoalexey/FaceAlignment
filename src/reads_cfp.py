@@ -60,6 +60,7 @@ def run():
                         #printGraphics("teste2", all_distances)
                         
                     else: 
+                        all_distances = []
                         print("Face nao encontrada")
                         
                     writesPointsNotFound(image_path, face_detected, all_distances)
