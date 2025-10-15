@@ -1,6 +1,9 @@
 import math
 from PIL import Image
 import os
+import face_alignment
+
+fa = face_alignment.FaceAlignment(face_alignment.LandmarksType.TWO_D, flip_input=False)
 
 def compare_points(ground_truth_pts, library_pts, correspondet_points, vertical_distance=1, horizontal_distance=1):
     all_distances = []
@@ -40,3 +43,29 @@ def get_image_path(fiducials_file_path):
     #images_index = image_path.index("Images")
     
     #return image_path[images_index + len("Images"):len(image_path)]
+
+def get_ground_truth_points(fiducials_folder):
+    ground_truth_pts = []
+    
+    if os.path.exists(fiducials_folder):
+        with open(fiducials_folder, 'r') as file:
+            lines = file.readlines()
+            for line in lines:
+                x, y = line.split(',')
+                x = float(x)
+                y = float(y)
+                ground_truth_pts.append((x, y))
+
+    return ground_truth_pts
+
+def get_face_alignment_points(image_path):
+    return fa.get_landmarks(image_path)
+
+def get_fa_correspondent_points():
+    return {1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 10, 10: 18, 11: 20, 12: 23, 13: 37, 15: 38, 17: 40, 18: 48, 19: 28, 20: 29, 21: 30, 22: 31, 25: 32, 28: 53, 26: 49, 29: 13} 
+
+def verifies_img_side(img, ground_truth_points):
+    
+    width, height = img.shape[:2]
+    x = ground_truth_points[21][0]
+    return x > width/2

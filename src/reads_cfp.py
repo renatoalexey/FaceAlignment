@@ -21,7 +21,7 @@ def writesPointsNotFound(image_path, face_detected, all_distances):
         img_index = image_path.index("Images")
         msg = (
             f"name: {image_path[img_index + 7:len(image_path)]}, resolution: {width}x{height}, color: {color}, face detected: {face_detected}, "
-            f"distances: {all_distances}, mean: {sum(all_distances) / len(all_distances)}\n"
+            f"distances: {all_distances}, mean: {np.mean(all_distances)}\n"
         )
 
         file.write(msg)
