@@ -3,9 +3,11 @@ import face_alignment
 import math
 import matplotlib.pyplot as plt
 import numpy as np
+import utils
+import cv2
 from PIL import Image
 
-correspondet_points = {1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 10, 10: 18, 11: 20, 12: 23, 13: 37, 15: 38, 17: 40, 18: 48, 19: 28, 20: 29, 21: 30, 22: 31, 25: 32, 28: 53, 26: 49, 29: 13} 
+correspondent_points = {1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 10, 10: 18, 11: 20, 12: 23, 13: 37, 15: 38, 17: 40, 18: 48, 19: 28, 20: 29, 21: 30, 22: 31, 25: 32, 28: 53, 26: 49, 29: 13} 
 vertical_point_a = 11
 vertical_point_b = 8
 horizontal_point_a = 0
@@ -48,6 +50,7 @@ def run():
             print(f"Pasta encontrada: {folder_path}")
             for image_name in os.listdir(path_images_folder):
                 image_path = os.path.join(path_images_folder, image_name)
+                img = cv2.imread(image_path)
                 try:
                     prediction_points = fa.get_landmarks(image_path)
                     face_detected = False
@@ -55,6 +58,8 @@ def run():
                         #print("Imagem processada")
                         face_detected = True
                         gt_points = get_ground_truth_points(get_ground_truth_file(cfp_ground_truth_points_path, nome, image_name))
+                        global correspondent_points
+                        correspondent_points = utils.get_fa_correspondent_points(img, gt_points)
                         #print(f"Chegou aqui 1: ${len(gt_points)}")
                         all_distances = compare_points(gt_points, prediction_points)
                         #printGraphics("teste2", all_distances)
@@ -93,8 +98,8 @@ def compare_points(ground_truth_pts, fa_pts):
     horizontal_distance = calcEuclideanDistance(ground_truth_pts[horizontal_point_a][0], ground_truth_pts[horizontal_point_a][1],
                                               ground_truth_pts[horizontal_point_b][0], ground_truth_pts[horizontal_point_b][1])
     for i, groud_truth_point in enumerate(ground_truth_pts, start=1):
-        if correspondet_points.get(i) is not None:
-            fa_point = fa_pts[0][correspondet_points.get(i)]
+        if correspondent_points.get(i) is not None:
+            fa_point = fa_pts[0][correspondent_points.get(i) - 1]
             distance = calcEuclideanDistance(groud_truth_point[0], groud_truth_point[1],
                         fa_point[0], fa_point[0], vertical_distance, horizontal_distance)    
             all_distances.append(distance)

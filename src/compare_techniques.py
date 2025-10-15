@@ -141,8 +141,8 @@ def print_landmarks(img, points, points_face, title):
       # cv2.circle(img, (x, y), 2, (0, 0, 255), -1)
 
     for i, point in enumerate(points_face, start=1):
-        #if i != 45 and i != 49:
-         #   continue
+        if i != 60 and i != 38 and i != 32:
+            continue
         x = round(point[0])
         y = round(point[1])
         cv2.circle(img, (x, y), 2, (255, 0, 0), -1)
@@ -153,7 +153,7 @@ def print_landmarks(img, points, points_face, title):
             str(i),                 # texto (índice)
             (x + 5, y - 5),         # posição (um pouco deslocado do ponto)
             cv2.FONT_HERSHEY_SIMPLEX, # fonte
-            0.1,                    # tamanho da fonte
+            0.2,                    # tamanho da fonte
             (255, 0, 0),            # cor (vermelho em BGR)
             1,                      # espessura
             cv2.LINE_AA             # suavização

@@ -2,7 +2,10 @@ import math
 from PIL import Image
 import os
 import face_alignment
+import boto3
+import cv2
 
+rekognition = boto3.client("rekognition", region_name="us-east-1")
 fa = face_alignment.FaceAlignment(face_alignment.LandmarksType.TWO_D, flip_input=False)
 
 def compare_points(ground_truth_pts, library_pts, correspondet_points, vertical_distance=1, horizontal_distance=1):
@@ -61,11 +64,38 @@ def get_ground_truth_points(fiducials_folder):
 def get_face_alignment_points(image_path):
     return fa.get_landmarks(image_path)
 
-def get_fa_correspondent_points():
-    return {1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 10, 10: 18, 11: 20, 12: 23, 13: 37, 15: 38, 17: 40, 18: 48, 19: 28, 20: 29, 21: 30, 22: 31, 25: 32, 28: 53, 26: 49, 29: 13} 
+def get_fa_correspondent_points(img, ground_truth_points):
+    if verifies_img_side(img, ground_truth_points) == True:
+        return {1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 10, 10: 18, 11: 20, 12: 23, 13: 37, 15: 38, 17: 40, 18: 48, 19: 28, 20: 29, 21: 30, 22: 31, 25: 32, 28: 53, 26: 49, 29: 13} 
+    return {2: 16, 3: 15, 4: 14, 5: 13, 6: 12, 7: 11, 8: 10, 9: 7, 10: 27, 11: 26, 12: 23, 12: 23, 14: 46, 15: 45, 16: 48, 18: 47, 20: 29, 21: 30, 22: 31, 23: 33, 24: 36, 26: 65, 27: 52, 29: 58, 30: 60}
 
 def verifies_img_side(img, ground_truth_points):
     
     width, height = img.shape[:2]
     x = ground_truth_points[21][0]
     return x > width/2
+
+
+def get_amazon_points(image_path):
+    with open(image_path, "rb") as img_file:
+        img_bytes = img_file.read()
+
+    # --- Chama o Rekognition ---
+    response = rekognition.detect_faces(
+        Image={'Bytes': img_bytes},
+        Attributes=['ALL']
+    )
+
+    img = cv2.imread(image_path)
+    h, w, _ = img.shape
+
+    amazon_pts = []
+    #print(f"Qte de faces: {response["FaceDetails"]}")
+    # --- Para cada rosto detectado ---
+    for face in response["FaceDetails"]:
+        for landmark in face["Landmarks"]:
+            x = float(landmark["X"] * w)
+            y = float(landmark["Y"] * h)
+            amazon_pts.append((x, y))
+
+    return amazon_pts
